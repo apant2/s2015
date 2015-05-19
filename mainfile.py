@@ -2,6 +2,10 @@
 #Find and replace var_name 'hey' to something more meaningful
 #Output should have same name as input file, say what it does and what is next step.
 #Miscanthus and maize files
+#Usage- comment out exactly how to execute file in terminal
+#Comment every function in very basic words
+#Don't hardcode anything. Let user choose depth of cutoff, name of output file, but set a default for both (5, inputgroup.[depth]). Look for others as well. Also offer them the choice of outputting as a tab delimited file or csv.
+
 
 import pandas as pd
 import numpy as np
