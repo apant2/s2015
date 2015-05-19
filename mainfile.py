@@ -11,6 +11,8 @@ import os
 
 #warnings.simplefilter("error")
 
+#To execute the entire script, execute the function whole_script_run() at the end of this script
+
 #Import into pandas datatable and remove all nan values, reset row indices
 def import_clean(datafile):
     data = pd.read_csv(datafile, sep=" ", header = None, delim_whitespace=True)
@@ -98,3 +100,7 @@ def old_fn_3(hey):
         vals_np = np.array(vals)
         print(np.std(vals_np))
         print(np.average(vals_np))
+
+
+
+whole_script_run()
