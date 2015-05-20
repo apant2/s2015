@@ -63,7 +63,7 @@ def statistics(blocks, name, depth, iscsv, outputdirectory):
     if not os.path.exists(outputdirectory):
         os.makedirs(outputdirectory)
     
-    # If iscsv is false, creates the output file as a tsv file. IF true, creates the output file as a csv.
+    # If iscsv is false, creates the output file as a tsv file. If true, creates the output file as a csv.
     if not iscsv:
         out_table.to_csv(outputdirectory+exit_name, sep='\t', index=False)
     if iscsv:
@@ -102,8 +102,8 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--inputdirectory", dest="input", default=os.getcwd(), help="The location of the files you want to run the script on.")
     parser.add_argument("-d", "--depth", dest="depth", default=5, type=int, help="The minimum depth of window you want to select.")
     parser.add_argument("-c", "--iscsv", dest="iscsv", help="If set to true, the output files will be comma separated value files. If false, they will be tsv files.")
-    parser.add_argument("-o", "--outputdirectory", dest="outputdirectory", default=os.getcwd()+"/output/", help="The output directory of the files this program creates.")
-    parser.add_argument("-t", "--filetype", dest="fileid", default='.bedCov', help="The piece of text that identifies which files we want to run through this script.")    
+    parser.add_argument("-o", "--outputdirectory", dest="outputdirectory", default=os.getcwd()+"/output/", help="The absolute output directory of the files this program creates.")
+    parser.add_argument("-f", "--fileid", dest="fileid", default='.bedCov', help="The piece of text that identifies which files we want to run through this script.")
     args=parser.parse_args()
     
     #The running of the actual program; takes in the inputs from the user in the terminal.
