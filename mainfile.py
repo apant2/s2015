@@ -1,5 +1,4 @@
 #To Do:
-#Output should have same name as input file, say what it does and what is next step.
 #Miscanthus and maize files
 #Comment every function in very basic words
 
@@ -10,15 +9,15 @@ import pandas as pd
 import numpy as np
 import os
 
-#Imports and cleans data for easy manipulation and usage.
+#Cleans and returns data for easy usage.
 def import_data(datafile):
     data = pd.read_csv(datafile, header=None, delim_whitespace=True)
     data = data[pd.notnull(data[0])]
 
     return(data)
 
-#Taking in the data and the depth value, does the following for each block: returns the start position, end position,
-# and the depths for the individual components of the block
+#Taking in the cleaned data and the depth value, does the following for each block that it finds: returns the start position, end position,
+# and all the depths for the individual components of the block
 def desired_values(data, depth):
     blocks=[[[],[]]]
     j=0
@@ -30,15 +29,17 @@ def desired_values(data, depth):
                 if(data[3].iloc[i-1]<depth):
                     blocks[j][0].append(data[1].iloc[i])
             except:
+                if(i==0):
+                    blocks[j][0].append(data[1].iloc[i])
                 pass
-            if(data[3].iloc[i+1]<depth):
+            if(data[3].iloc[i+1]<depth or i == len(data)-2):
                 blocks[j][0].append(data[2].iloc[i])
                 blocks.append([[],[]])
                 j+=1
     del blocks[-1]
     return(blocks)
 
-#Taking in the blocks, desired filename, and desired output filetype, create a file in the specified directory
+#Taking in the blocks, the name of the file being analyzed, the is CSV option, and the desired output filetype, this function creates an output file in the specified directory.
 def statistics(blocks, name, depth, iscsv, outputdirectory):
     out_table = pd.DataFrame(columns=['Start','End', 'Std_Dev', 'Avg', 'Median'])
     i=0
@@ -57,10 +58,12 @@ def statistics(blocks, name, depth, iscsv, outputdirectory):
 
     (root, ext) = os.path.splitext(name)
     exit_name = root+str(depth)+".bedCov"
-    
+
+    #If the desired output directory does not exist, it is created
     if not os.path.exists(outputdirectory):
         os.makedirs(outputdirectory)
     
+    # If iscsv is false, creates the output file as a tsv file. IF true, creates the output file as a csv.
     if not iscsv:
         out_table.to_csv(outputdirectory+exit_name, sep='\t', index=False)
     if iscsv:
@@ -72,7 +75,7 @@ def create_file(datafile, depth, iscsv, outputdirectory):
     blocks = desired_values(data, depth)
     statistics(blocks, datafile, depth, iscsv, outputdirectory)
 
-#converts the some string version of the word "true" to its boolean expression. Used in another function.
+#converts some string version of the word "true" to its boolean expression; if the string inputted is not a form of 'true', returns false. Used in another function.
 def isTrue(bool_statement):
     if bool_statement.lower()=='true':
         return True
@@ -86,10 +89,12 @@ def main(input_directory, depth, iscsv, fileid, outputdirectory):
         if(fileid in f):
             create_file(f, depth, iscsv, outputdirectory)
 
-#The below code will run only when this file is executed as the main file. When this file is imported as a module the code below will not automatically execute.
+#The below code will run only when this file is executed as the main file. When this file is imported as a module the code below will not execute.
 if __name__ == '__main__':
     import argparse
     import time
+    
+    #Records the time before we start the script
     start_time = time.time()
 
     #Create the optional parameters this script can take in terminal
@@ -101,7 +106,9 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--filetype", dest="fileid", default='.bedCov', help="The piece of text that identifies which files we want to run through this script.")    
     args=parser.parse_args()
     
-    
+    #The running of the actual program; takes in the inputs from the user in the terminal.
     main(args.input, args.depth, isTrue(args.iscsv), args.fileid, args.outputdirectory)
+    
+    #Prints out how long it took for the script to run
     print("--- %s seconds ---" % (time.time() - start_time))
 
