@@ -2,12 +2,12 @@
 #Output should have same name as input file, say what it does and what is next step.
 #Miscanthus and maize files
 #Comment every function in very basic words
+#Question: Should every file have same name template, or should there be an option to enter unique names for each file?
 
-# Look for others as well. Also offer them the choice of outputting as a tab delimited file or csv.
+
 
 #To run script in terminal:
 #  python mainfile.py [-i arg] [-d arg] [-f arg] [-c arg] [-o arg] [-t arg]
-
 
 import pandas as pd
 import numpy as np
@@ -20,7 +20,7 @@ def import_data(datafile):
 
     return(data)
 
-#Taking in the data and the depth value, does the following for each block: returns the start position and end position in one array,
+#Taking in the data and the depth value, does the following for each block: returns the start position, end position,
 # and the depths for the individual components of the block
 def desired_values(data, depth):
     blocks=[[[],[]]]
@@ -58,14 +58,19 @@ def statistics(blocks, name, iscsv=True):
         out_table.loc[i] = [start_pos, end_pos, std_dev, avg, med]
         i+=1
 
-    name = datafile.replace(".bedCov", "outputval.csv")
+    new_extension='.csv'
+    if not iscsv:
+        new_extension = '.tsv'
+
+    (root, ext) = os.path.splitext(name)
+    os.rename(name, root + new_extension)
 
     if not iscsv:
-        out_table.to_csv(name, sep='\t')
+        out_table.to_csv(name+'.tsv', sep='\t')
     if iscsv:
-        out_table.to_csv(name)
+        out_table.to_csv(name+'.csv')
 
-#Function to run for one file
+#Creates a file for one dataset
 def create_file(datafile, depth, iscsv):
     data = import_data(datafile)
     blocks = desired_values(data, depth)
