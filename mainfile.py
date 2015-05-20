@@ -12,6 +12,7 @@ import numpy as np
 #import warnings
 import os
 #import sys
+import argparse
 
 #warnings.simplefilter("error")
 
@@ -27,19 +28,19 @@ def import_clean(datafile):
 
 #Creates a 3-D Array. Returns array of arrays, with each sub-array consisting of two arrays: (1) the start and end positions, and
 # (2) the values in there
-def desired_values(data):
+def desired_values(data, depth):
     hey=[[[],[]]]
     j=0
 
     for i in range(len(data)-1):
-        if(data[3].iloc[i]>=5):
+        if(data[3].iloc[i]>=depth):
             hey[j][1].append(data[3].iloc[i])
             try:
                 if(data[3].iloc[i-1]<5):
                     hey[j][0].append(data[1].iloc[i])
             except:
                 pass
-            if(data[3].iloc[i+1]<5):
+            if(data[3].iloc[i+1]<depth):
                 hey[j][0].append(data[2].iloc[i])
                 hey.append([[],[]])
                 j+=1
@@ -47,7 +48,7 @@ def desired_values(data):
     return(hey)
 
 #Return std. dev,
-def statistics(hey, datafile):
+def statistics(hey, datafile, iscsv):
     out_table = pd.DataFrame(columns=['Start','End', 'Std_Dev', 'Avg', 'Median'])
     i=0
     for elem in hey:
@@ -64,47 +65,33 @@ def statistics(hey, datafile):
         i+=1
 
     name = datafile.replace(".bedCov", "outputval.csv")
-    out_table.to_csv(name)
+
+    if not csv:
+        out_table.to_csv(name, sep='\t')
+    if csv:
+        out_table.to_csv(name)
 
 #Function to run for one file
-def wrapper_fn(datafile):
+def wrapper_fn(datafile, depth, iscsv):
     data = import_clean(datafile)
-    hey = desired_values(data)
-    statistics(hey, datafile)
+    hey = desired_values(data, depth)
+    statistics(hey, datafile, iscsv)
 
-#Run this funtion to execute this script for the directory it is placed in
-def whole_script_run():
+#Main function to run the script
+def main(depth, iscsv):
     files = os.listdir(os.getcwd())
     for f in files:
         if(f[-6:-1]+f[-1] == 'bedCov'):
-            wrapper_fn(f)
-
-#ALL FUNCITONS BELOW ARE OLD VERSIONS OF FUNCTIONSS!!!! ~~SAVE FOR FUTURE USE IF NEEDED
-
-#For each block of rows that contains values greater than or equal to 5, places their star positions, end positions and values in a tuple, then
-#combines each tuple in a block, then puts every block in a different array
-def old_fn_2(data):
-    hey=[[]]
-    j=0
-
-    for i in range(len(data)-1):
-        if(data[12].iloc[i]>=5):
-            hey[j].append((data[6].iloc[i], data[9].iloc[i], data[12].iloc[i]))
-            if(data[12].iloc[i+1]<5):
-                hey.append([])
-                j+=1
-    return(hey)
-
-#Copute mean, standard deviation and -- for each block
-def old_fn_3(hey):
-    for elem in hey:
-        vals=[]
-        for elem1 in elem:
-            vals.append(elem1[2])
-        vals_np = np.array(vals)
-        print(np.std(vals_np))
-        print(np.average(vals_np))
+            wrapper_fn(f, depth, iscsv)
 
 
+if __name__ == '__main__':
+    import argparse
 
-whole_script_run()
+    parser = argparse.ArgumentParser(description='something')
+    parser.add_argument("-d", "--depth", dest="depth", default=5, type=int, help="Minimum depth of window")
+    parser.add_argument("-f", "--filename", dest="filename", default="window_depth", help="name of the output file")
+    parser.add_argument("-c", "--iscsv", dest="iscsv", default=TRUE, help="If set to true, the output files will be csv files")
+
+    args=parser.parse_args()
+    main(args.depth, args.iscsv)
