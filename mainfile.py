@@ -56,7 +56,7 @@ def statistics(blocks, name, depth, iscsv=True):
         i+=1
 
     (root, ext) = os.path.splitext(name)
-    exit_name = root+str(depth)+".BedCov")
+    exit_name = root+str(depth)+".BedCov"
 
     if not iscsv:
         out_table.to_csv(exit_name, sep='\t')
@@ -73,18 +73,18 @@ def create_file(datafile, depth, iscsv):
 def main(input_directory, depth, iscsv, fileid):
     files = os.listdir(input_directory)
     for f in files:
-        if(filetype in f):
+        if(fileid in f):
             create_file(f, depth, iscsv)
 
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='something')
-    parser.add_argument("-i", "--inputdirectory", dest="input", default=os.getcwd(), type=string, help="The input directory of the files")
+    parser.add_argument("-i", "--inputdirectory", dest="input", default=os.getcwd(), help="The input directory of the files")
     parser.add_argument("-d", "--depth", dest="depth", default=5, type=int, help="Minimum depth of window")
     parser.add_argument("-c", "--iscsv", dest="iscsv", default=True, help="If set to true, the output files will be csv files")
-    parser.add_argument("-o", "--outputdirectory", dest="output", default=os.getcwd()+"/output", type=string, help="The output directory of the files")
-    parser.add_argument("-t", "--filetype", dest="fileid", default='.bedCov', type=string, help="The input file identifier")
+    parser.add_argument("-o", "--outputdirectory", dest="output", default=os.getcwd()+"/output", help="The output directory of the files")
+    parser.add_argument("-t", "--filetype", dest="fileid", default='.bedCov', help="The input file identifier")
 
     args=parser.parse_args()
     main(args.input, args.depth, args.iscsv, args.fileid)
