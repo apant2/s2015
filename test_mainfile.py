@@ -6,17 +6,19 @@
 #  python mainfile.py --help
 
 module load python/2.7.3
-
 import pandas as pd
 import numpy as np
 import os
 
 #Cleans and returns data for easy usage by this script
 def import_data(datafile):
-    data = pd.read_csv(datafile, header=None, delim_whitespace=True)
-    data = data[pd.notnull(data[0])]
-
-    return data
+    array=[]
+    with open(datafile, 'r') as f:
+        for line in f:
+            words = text.split()
+            array.append(words)
+    print array
+    return words
 
 #Taking in the cleaned data and the depth value, does the following for each block that it finds: returns the start position, end position,
 # and all the depths for the individual components of the block
