@@ -5,9 +5,9 @@
 #For help on how to run this script in bash, run the following:
 #  python mainfile.py --help
 
-module load python/2.7.3
 import pandas as pd
 import numpy as np
+import csv
 import os
 
 #Cleans and returns data for easy usage by this script
@@ -19,6 +19,7 @@ def import_data(datafile):
             if words:
                 array.append(words)
     return array
+    print(array)
 
 #Taking in the cleaned data and the depth value, does the following for each block that it finds: returns the start position, end position,
 # and all the depths for the individual components of the block
@@ -28,20 +29,21 @@ def desired_values(data, depth):
     index = 0
     
     for row in data:
-        if(int(row[3])>=depth):
-            blocks[j][1].append(int(row[3]))
-            try:
-                if(int(data[index-1][3])<depth):
-                    blocks[j][0].append(row[1])
-            except:
-                if(index==0):
-                    blocks[j][0].append(int(row[1]))
-                pass
-            if(int(data[index+1][3])<depth or index == len(data)-1):
-                blocks[j][0].append(int(row[2]))
-                blocks.append([[],[]])
-                j+=1
-        index+=1
+        if row:
+            if(int(row[3])>=depth):
+                blocks[j][1].append(int(row[3]))
+                try:
+                    if(int(data[index-1][3])<depth):
+                        blocks[j][0].append(row[1])
+                except:
+                    if(index==0):
+                        blocks[j][0].append(int(row[1]))
+                    pass
+                if(int(data[index+1][3])<depth or index == len(data)-1):
+                    blocks[j][0].append(int(row[2]))
+                    blocks.append([[],[]])
+                    j+=1
+            index+=1
     del blocks[-1]
     return(blocks)
 
@@ -61,20 +63,21 @@ def std_dev(values):
     
     return stdev
 
-def median(values):
-    length = len(values)
-    if(length%2 == 1):
-        return(values[int(len(values)/2 + .5)])
-    if(length%2 == 0):
-        out = average([values[int(len(values)/2 -1)],values[int(len(values)/2 +1)]])
-        return out
-    return None
+def median(numericValues):
+    theValues = sorted(numericValues)
+    if len(theValues) % 2 == 1:
+        return theValues[(len(theValues)+1)/2-1]
+    else:
+        lower = theValues[len(theValues)/2-1]
+        upper = theValues[len(theValues)/2]
+        return (float(lower + upper)) / 2
+
 
 #Taking in the blocks, the name of the file being analyzed, the is CSV option, and the desired output filetype, this function creates an output file in the specified directory.
 def statistics(blocks, name, depth, iscsv, outputdirectory):
     
     (root, ext) = os.path.splitext(name)
-    exit_name = root+str(depth)+".bedCov"
+    exit_name = outputdirectory+root+str(depth)+".bedCov"
     
     #If the desired output directory does not exist, it is created
     if not os.path.exists(outputdirectory):
@@ -103,15 +106,15 @@ def statistics(blocks, name, depth, iscsv, outputdirectory):
         finally:
             f.close()
 
-if not iscsv:
-    f=open(exit_name, 'wt')
+    if not iscsv:
+        f=open(exit_name, 'wt')
         try:
             writer = csv.writer(f, delimiter="\t")
             writer.writerow( ('Start','End', 'Std_Dev', 'Avg', 'Median') )
             for row in out:
                 writer.writerow( (str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4])) )
-    finally:
-        f.close()
+        finally:
+            f.close()
 
 #Creates a file for one dataset
 def create_file(datafile, depth, iscsv, outputdirectory):
@@ -147,7 +150,7 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--depth", dest="depth", default=5, type=int, help="The minimum depth of window you want to select.")
     parser.add_argument("-c", "--iscsv", dest="iscsv", default="True", help="If set to true, the output files will be comma separated value files. If false, they will be tsv files.")
     parser.add_argument("-o", "--outputdirectory", dest="outputdirectory", default=os.getcwd()+"/output/", help="The absolute output directory of the files this program creates.")
-    parser.add_argument("-f", "--fileid", dest="fileid", default='.bedCov', help="The piece of text that identifies which files we want to run through this script.")
+    parser.add_argument("-f", "--fileid", dest="fileid", default=".bedCov", help="The piece of text that identifies which files we want to run through this script.")
     args=parser.parse_args()
     
     #The running of the actual program; takes in the inputs from the user in the terminal.
