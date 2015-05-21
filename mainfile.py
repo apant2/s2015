@@ -1,11 +1,12 @@
+#!/usr/bin/python
+module load python/2.7.3/intel-13.0.1
+
 #To Do:
 #Miscanthus and maize files
 #Comment every function in very basic words
 
 #For help on how to run this script in bash, run the following:
 #  python mainfile.py --help
-
-module load python/2.7.3
 
 import pandas as pd
 import numpy as np

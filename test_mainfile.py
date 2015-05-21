@@ -15,63 +15,103 @@ def import_data(datafile):
     array=[]
     with open(datafile, 'r') as f:
         for line in f:
-            words = text.split()
-            array.append(words)
-    print array
-    return words
+            words = line.split()
+            if words:
+                array.append(words)
+    return array
 
 #Taking in the cleaned data and the depth value, does the following for each block that it finds: returns the start position, end position,
 # and all the depths for the individual components of the block
 def desired_values(data, depth):
     blocks=[[[],[]]]
     j=0
-
-    for i in range(len(data)-1):
-        if(data[3].iloc[i]>=depth):
-            blocks[j][1].append(data[3].iloc[i])
+    index = 0
+    
+    for row in data:
+        if(int(row[3])>=depth):
+            blocks[j][1].append(int(row[3]))
             try:
-                if(data[3].iloc[i-1]<depth):
-                    blocks[j][0].append(data[1].iloc[i])
+                if(int(data[index-1][3])<depth):
+                    blocks[j][0].append(row[1])
             except:
-                if(i==0):
-                    blocks[j][0].append(data[1].iloc[i])
+                if(index==0):
+                    blocks[j][0].append(int(row[1]))
                 pass
-            if(data[3].iloc[i+1]<depth or i == len(data)-2):
-                blocks[j][0].append(data[2].iloc[i])
+            if(int(data[index+1][3])<depth or index == len(data)-1):
+                blocks[j][0].append(int(row[2]))
                 blocks.append([[],[]])
                 j+=1
+        index+=1
     del blocks[-1]
     return(blocks)
 
+def average(values):
+    sum=0
+    for elem in values:
+        sum+=float(elem)
+    
+    return(sum/len(values))
+
+def std_dev(values):
+    var=0
+    avg=average(values)
+    for num in values:
+        var+=((num-avg)**2)
+    stdev=(var/len(values))**.5
+    
+    return stdev
+
+def median(values):
+    length = len(values)
+    if(length%2 == 1):
+        return(values[int(len(values)/2 + .5)])
+    if(length%2 == 0):
+        out = average([values[int(len(values)/2 -1)],values[int(len(values)/2 +1)]])
+        return out
+    return None
+
 #Taking in the blocks, the name of the file being analyzed, the is CSV option, and the desired output filetype, this function creates an output file in the specified directory.
 def statistics(blocks, name, depth, iscsv, outputdirectory):
-    out_table = pd.DataFrame(columns=['Start','End', 'Std_Dev', 'Avg', 'Median'])
-    i=0
-    for block in blocks:
-        vals=[]
-        vals_np = np.array(block[1])
-
-        start_pos = int(block[0][0])
-        end_pos = int(block[0][1])
-        std_dev = np.std(vals_np)
-        avg = np.average(vals_np)
-        med = np.median(vals_np)
-
-        out_table.loc[i] = [start_pos, end_pos, std_dev, avg, med]
-        i+=1
-
+    
     (root, ext) = os.path.splitext(name)
     exit_name = root+str(depth)+".bedCov"
-
+    
     #If the desired output directory does not exist, it is created
     if not os.path.exists(outputdirectory):
         os.makedirs(outputdirectory)
     
-    # If iscsv is false, creates the output file as a tsv file. If true, creates the output file as a csv.
-    if not iscsv:
-        out_table.to_csv(outputdirectory+exit_name, sep='\t', index=False)
+    out=[]
+    i=0
+    for block in blocks:
+        vals=[]
+        values = block[1]
+        
+        start_pos = int(block[0][0])
+        end_pos = int(block[0][1])
+        stddev = std_dev(values)
+        avg = average(values)
+        med = median(values)
+        out.append((start_pos,end_pos,stddev,avg,med))
+    
     if iscsv:
-        out_table.to_csv(outputdirectory+exit_name, index=False)
+        f=open(exit_name, 'wt')
+        try:
+            writer = csv.writer(f)
+            writer.writerow( ('Start','End', 'Std_Dev', 'Avg', 'Median') )
+            for row in out:
+                writer.writerow( (row[0], row[1], row[2], row[3],row[4]) )
+        finally:
+            f.close()
+
+if not iscsv:
+    f=open(exit_name, 'wt')
+        try:
+            writer = csv.writer(f, delimiter="\t")
+            writer.writerow( ('Start','End', 'Std_Dev', 'Avg', 'Median') )
+            for row in out:
+                writer.writerow( (str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4])) )
+    finally:
+        f.close()
 
 #Creates a file for one dataset
 def create_file(datafile, depth, iscsv, outputdirectory):
