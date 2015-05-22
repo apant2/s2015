@@ -1,3 +1,6 @@
+#!/usr/local/bin/python
+#/usr/lib/python2.7
+
 #To Do:
 #Miscanthus and maize files
 #Comment every function in very basic words
@@ -5,8 +8,6 @@
 #For help on how to run this script in bash, run the following:
 #  python mainfile.py --help
 
-import pandas as pd
-import numpy as np
 import csv
 import os
 
@@ -19,7 +20,7 @@ def import_data(datafile):
             if words:
                 array.append(words)
     return array
-    print(array)
+
 
 #Taking in the cleaned data and the depth value, does the following for each block that it finds: returns the start position, end position,
 # and all the depths for the individual components of the block
@@ -32,19 +33,23 @@ def desired_values(data, depth):
         if row:
             if(int(row[3])>=depth):
                 blocks[j][1].append(int(row[3]))
-                try:
-                    if(int(data[index-1][3])<depth):
-                        blocks[j][0].append(row[1])
-                except:
-                    if(index==0):
-                        blocks[j][0].append(int(row[1]))
-                    pass
-                if(int(data[index+1][3])<depth or index == len(data)-1):
+                if(index==0):
+                    blocks[j][0].append(row[0])
+                    blocks[j][0].append(int(row[1]))
+                elif(int(data[index-1][3])<depth):
+                    blocks[j][0].append(row[0])
+                    blocks[j][0].append(row[1])
+                
+                if(index == len(data)-1):
+                    blocks[j][0].append(int(row[2]))
+                    blocks.append([[],[]])
+                elif(int(data[index+1][3])<depth):
                     blocks[j][0].append(int(row[2]))
                     blocks.append([[],[]])
                     j+=1
             index+=1
     del blocks[-1]
+
     return(blocks)
 
 def average(values):
@@ -89,32 +94,42 @@ def statistics(blocks, name, depth, iscsv, outputdirectory):
         vals=[]
         values = block[1]
         
-        start_pos = int(block[0][0])
-        end_pos = int(block[0][1])
+        scaffold=block[0][0]
+        start_pos = int(block[0][1])
+        end_pos = int(block[0][2])
+        window_size = end_pos-start_pos
         stddev = std_dev(values)
         avg = average(values)
         med = median(values)
-        out.append((start_pos,end_pos,stddev,avg,med))
+        out.append((scaffold,start_pos,end_pos,window_size,stddev,avg,med))
+    
+    if iscsv:
+        d=","
+    elif not iscsv:
+        d="\t"
     
     if iscsv:
         f=open(exit_name, 'wt')
         try:
-            writer = csv.writer(f)
-            writer.writerow( ('Start','End', 'Std_Dev', 'Avg', 'Median') )
+            writer = csv.writer(f, delimiter=d)
+            writer.writerow( ('Scaffold','Start','End','Window Size','Std_Dev', 'Avg', 'Median') )
             for row in out:
-                writer.writerow( (row[0], row[1], row[2], row[3],row[4]) )
+                writer.writerow( (row[0], row[1], row[2], row[3],row[4],row[5],row[6]) )
         finally:
             f.close()
 
-    if not iscsv:
-        f=open(exit_name, 'wt')
-        try:
-            writer = csv.writer(f, delimiter="\t")
-            writer.writerow( ('Start','End', 'Std_Dev', 'Avg', 'Median') )
-            for row in out:
-                writer.writerow( (str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4])) )
-        finally:
-            f.close()
+
+#
+#
+#    if not iscsv:
+#        f=open(exit_name, 'wt')
+#        try:
+#            writer = csv.writer(f, delimiter="\t")
+#            writer.writerow( ('Start','End', 'Std_Dev', 'Avg', 'Median') )
+#            for row in out:
+#                writer.writerow( (row[0], row[1], row[2], row[3],row[4],row[5],row[6]) )
+#        finally:
+#            f.close()
 
 #Creates a file for one dataset
 def create_file(datafile, depth, iscsv, outputdirectory):
@@ -132,6 +147,7 @@ def isTrue(bool_statement):
 #Main function to run the script
 def main(input_directory, depth, iscsv, fileid, outputdirectory):
     files = os.listdir(input_directory)
+    print(files)
     for f in files:
         if(fileid in f):
             create_file(f, depth, iscsv, outputdirectory)
