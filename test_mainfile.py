@@ -147,7 +147,6 @@ def isTrue(bool_statement):
 #Main function to run the script
 def main(input_directory, depth, iscsv, fileid, outputdirectory):
     files = os.listdir(input_directory)
-    print(files)
     for f in files:
         if(fileid in f):
             create_file(f, depth, iscsv, outputdirectory)
