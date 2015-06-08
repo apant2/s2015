@@ -57,7 +57,7 @@ def import_data(datafile):
     return data
 
 
-# Taking in the cleaned data (data) and the depth value (depth), does the following for every block of rows with depth greater than or equal to depth:
+# Taking in the cleaned data (data) and the depth value (depth), does the following for every block of rows with depth greater than or equal to the variable depth:
 # Returns the start position, end position, and all the depths for the individual components of the block in an array
 def desired_values(data, depth):
     blocks=[[[],[]]]
@@ -87,7 +87,7 @@ def desired_values(data, depth):
 
     return(blocks)
 
-#Taking an array or list of values, returns the average of the values
+#Taking an array or list of values (values), returns the average of the values
 def average(values):
     sum=0
     for elem in values:
@@ -95,7 +95,7 @@ def average(values):
     
     return(sum/len(values))
 
-#Taking an array or list of values, returns the standard deviation of the values
+#Taking an array or list of values (values), returns the standard deviation of the values
 def std_dev(values):
     var=0
     avg=average(values)
@@ -105,7 +105,7 @@ def std_dev(values):
     
     return stdev
 
-#Taking an array or list of values, returns the median of the values
+#Taking an array or list of values (numericValues), returns the median of the values
 def median(numericValues):
     theValues = sorted(numericValues)
     if len(theValues) % 2 == 1:
@@ -116,7 +116,7 @@ def median(numericValues):
         return (float(lower + upper)) / 2
 
 
-#Function input: array returned from desired_values, the name of the file being analyzed, the is CSV option, and the desired output directory
+#Function input: array returned from desired_values (blocks), the name of the file being analyzed (name), whehter the file is a csv or not (iscsv) as a boolean, and the desired output directory (outputdirectory)
 #What is returned by the function: A delimitered file with each row having the following information-
 #Name of Scaffold, Start Position , End Position,Window Size (Difference of End and Start Position), Standard Deviation of the depths in each block, Average of the depths, Median of the depths
 
@@ -158,15 +158,15 @@ def statistics(blocks, name, depth, iscsv, outputdirectory):
         f.close()
 
 #Creates a file for one dataset
-#Function input: An input file in the above format, the cutoff value of the depth, whether the file is a csv (true) or tsv (false), and the output file's directory
-#Function output: An output file
+#Function input: An input file in the above format (datafile), the cutoff value of the depth (depth), whether the file is a csv (true) or tsv (false) (iscsv), and the output file's directory (outputdirectory)
+#Function output: the file produced by the function statistics
 def create_file(datafile, depth, iscsv, outputdirectory):
     data = import_data(datafile)
     blocks = desired_values(data, depth)
     statistics(blocks, datafile, depth, iscsv, outputdirectory)
 
 #Converts a string to a boolean value
-#Function input: A string
+#Function input: A string (bool_statement)
 #Function output: If it is some version of the word "true", returns boolean value True. Else, returns boolean value false
 def isTrue(bool_statement):
     if bool_statement.lower()=='true':
@@ -175,8 +175,12 @@ def isTrue(bool_statement):
         return False
 
 #The main function of the script
-#Function input: A directory that contains files with the format shown at the start of this script, the cutoff value of the depth, whether the file is a csv (true) or tsv (false), the slice of text which identifies the files we want to run through this script, and the directory of the output files
-#Function output: In the directory outputdirectory, creates output files for each input file
+#Function input: A directory that contains files with the format shown at the start of this script (input_directory),
+#the cutoff value of the depth (depth),
+#whether the file is a csv (true) or tsv (false) (iscsv), the slice of text which identifies the files we want to run through this script (fileid),
+#and the directory of the output files (outputdirectory)
+
+#Function output: In the directory outputdirectory, for each file that contains our fileid, creates the file produced by the function statistics in the output directory
 def main(input_directory, depth, iscsv, fileid, outputdirectory):
     files = os.listdir(input_directory)
     for f in files:
