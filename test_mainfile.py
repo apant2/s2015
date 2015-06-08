@@ -1,6 +1,9 @@
 #!/usr/local/bin/python
 #/usr/lib/python2.7
 
+#This script takes in a file with rows of data. Each row contains the scaffold name, the start position of a window, the end position of a window, and the number of reads in each window (the depth)
+#For each block of rows that have a depth greater than some threshold, we return a row in our ouput file with the name of the scaffold, the start position value of the block, the end position value of the block, length of the block, and some statistics (standard deviation, average, mean) on the depths in the block
+
 #For help on how to run this script in bash, run the following:
 #  python mainfile.py --help
 
@@ -117,13 +120,13 @@ def median(numericValues):
 
 
 #Function input: array returned from desired_values (blocks), the name of the file being analyzed (name), whehter the file is a csv or not (iscsv) as a boolean, and the desired output directory (outputdirectory)
-#What is returned by the function: A delimitered file with each row having the following information-
-#Name of Scaffold, Start Position , End Position,Window Size (Difference of End and Start Position), Standard Deviation of the depths in each block, Average of the depths, Median of the depths
+#What is returned by the function: A delimitered file with each row having the following information for each block in blocks-
+#Name of our block's scaffold, Start Position , End Position,Window Size (Difference of End and Start Position), Standard Deviation of the depths in each block, Average of the depths, Median of the depths
 
 def statistics(blocks, name, depth, iscsv, outputdirectory):
     
     (root, ext) = os.path.splitext(name)
-    exit_name = outputdirectory+root+".depth"+str(depth)+".bedCov"
+    exit_name = outputdirectory+root+"_depth"+str(depth)+".bedCov"
     
     #If the desired output directory does not exist, it is created
     if not os.path.exists(outputdirectory):
